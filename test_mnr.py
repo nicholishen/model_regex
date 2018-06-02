@@ -23,7 +23,7 @@ class TestModelNumberRegex(unittest.TestCase):
             ('CR33-30/36A+TDR+TXV', 'CR33-36A',),
             ('CF/CM/CU24A+TXV', 'CF2',),
         )
-        results = [self.m.transform(case[0]).match(case[1]) for case in cases]
+        results = [self.m.transform(case[0]).is_match(case[1]) for case in cases]
         self.assertNotIn(False, results)
 
     def test_not_match_cases(self):
@@ -43,7 +43,7 @@ class TestModelNumberRegex(unittest.TestCase):
             ('CR33-30/36A+TDR+TXV', 'CR33-36B',),
             ('CF/CM/CU24A+TXV', 'CF25',),
         )
-        results = [self.m.transform(case[0]).match(case[1]) for case in cases]
+        results = [self.m.transform(case[0]).is_match(case[1]) for case in cases]
         self.assertNotIn(True, results)
 
     def test_raise_on_malformed_mn(self):

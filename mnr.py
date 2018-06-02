@@ -100,7 +100,7 @@ class ModelNumberRegex(object):
     def chunks(self):
         return self._chunks
 
-    def transform(self, model_number: str=None):
+    def transform(self, model_number: str=None) -> 'ModelNumberRegex':
         """self: Converts mfr psuedo-regex model-numbers to real-regex and 
         stores them for rapid reverse matches; returns the new regex. 
 
@@ -115,7 +115,7 @@ class ModelNumberRegex(object):
         Args:
             model_number (:obj: `str`, optional) The shitty-re to be 'compiled'
         Returns:
-            The new (full) regex if successful, None otherwise.
+            ModelNumberRegex - self
         """
 
         # check if model number has been properly set or raise
@@ -296,7 +296,7 @@ class ModelNumberRegex(object):
         self._chunks = tuple(self._chunks)
         return self
 
-    def match(self, model_to_match: str) -> bool:
+    def is_match(self, model_to_match: str) -> bool:
         """bool: Compares a model-number to the newly formed regex and
         return the result of the match. Partial strings can be compared.
         Args:

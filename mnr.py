@@ -33,12 +33,15 @@ re to a full string, we're actually matching a partial string to a full re.
 _Example MFR model-number nomenclature:
     https://www.lennox.com/lib/legacy-res/pdfs/lennox_model_and_serial_nomenclature.pdf
 
-Example:
+Examples:
     legit_query = 'TAB123Z4X'
     shitty_model_number = '*AB,CD123(X1,Y1,Z1)4*'
     matcher = ModelNumberRegex(shitty_model_number)
-    if matcher.match(legit_query):
+    if matcher.is_match(legit_query):
         print(f'{legit_query} matches up with {shitty_model_number}')
+
+    matcher = ModelNumberRegex()
+    is_a_match = matcher.transform(shitty_model_number).is_match(legit_query)
 
 TODO:
     * Make MNR.transform return an object instead of regex string.

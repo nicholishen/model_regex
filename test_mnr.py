@@ -47,12 +47,16 @@ class TestModelNumberRegex(unittest.TestCase):
         self.assertNotIn(True, results)
 
     def test_raise_on_malformed_mn(self):
+        """Testing a malformed string for exception, otherwise
+        the program could enter an infinite loop.
+        """
         with self.assertRaises(Exception):
             mf = 'ABC123(A,BC'
             matcher = ModelNumberRegex(mf)
             print(matcher)
 
     def test_pickle_and_attributes(self):
+        """Tesing pickle"""
         matcher1 = ModelNumberRegex('ABC123*')
         pkl = pickle.dumps(matcher1)
         matcher2 = pickle.loads(pkl)
@@ -62,6 +66,7 @@ class TestModelNumberRegex(unittest.TestCase):
         self.assertEqual(r1, r2)
 
     def test_regex_chunks(self):
+        """testing chunks for correctness and type"""
         matcher = self.m.transform('*U1(CD,DK,TT)**--16')
         self.assertEqual(tuple, type(matcher.chunks))
         self.assertEqual(6, len(matcher.chunks))

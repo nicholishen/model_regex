@@ -51,9 +51,6 @@ TODO:
 import re
 from collections import namedtuple
 
-__version__ = '0.0.1'
-__all__ = ['ModelNumberRegex']
-
 
 PatternChunk = namedtuple('PatternChunk', 'pattern size')
 
@@ -62,7 +59,7 @@ class ModelNumberRegex(object):
     """Converts HVAC model-number's shitty-re to good-re
     Attributes:
         chunks (:obj:`list` of :obj:`tuple`): The new regex split into chunks
-            via PatternChunk tuples.
+            via PatternChunk namedtuples.
         pattern (str): The full pattern of the new regex.
     """
 
@@ -77,14 +74,14 @@ class ModelNumberRegex(object):
         self._chunks = tuple()
         self._model_number = model_number
         self._pattern0 = re.compile(r'\d{2,3}/\d{2,3}')
-        self._pattern1 = re.compile(r'^(\w{1,3},)+')
-        self._pattern1_sub1 = re.compile(r'^(\w{1,2},\w{1,2})$')
-        self._pattern2 = re.compile(r'^(\w+)')
-        self._pattern3 = re.compile(r'^\((\w{1,3},?)+\)')
-        self._pattern4 = re.compile(r'^(\*+)')
-        self._pattern4_sub1 = re.compile(r'^(\*)$')
-        self._pattern5 = re.compile(r'^(-+)')
-        self._pattern6 = re.compile(r'^(\(\*\))')
+        self._pattern1 = re.compile(r'^(?:\w{1,3},)+')
+        self._pattern1_sub1 = re.compile(r'^\w{1,2},\w{1,2}$')
+        self._pattern2 = re.compile(r'^\w+')
+        self._pattern3 = re.compile(r'^\((?:\w{1,3},?)+\)')
+        self._pattern4 = re.compile(r'^\*+')
+        self._pattern4_sub1 = re.compile(r'^\*$')
+        self._pattern5 = re.compile(r'^-+')
+        self._pattern6 = re.compile(r'^\(\*\)')
         if model_number:
             self.transform()
 
@@ -277,8 +274,8 @@ class ModelNumberRegex(object):
         # unknown parsing error.
         break_count = 0
         # iterate through the rulsets. trim the remaining string
-        # if a func has modified the remaining string then start
-        # over from ruleset 1
+        # if a func has modified the remaining string the restart
+        # the parsing loop
         while self._rem_str:
             for rule in rules:
                 res = rule()
@@ -289,7 +286,7 @@ class ModelNumberRegex(object):
             # debs = self._rem_str
             if break_count > 2:
                 raise Exception(
-                    "Couldn't parse the remaining:{}".format(self._rem_str))
+                    f"Couldn't parse the remaining: {self._rem_str}")
             break_count += 1
         if self._rem_str:
             raise Exception('Unknown parsing error.')
@@ -311,24 +308,35 @@ class ModelNumberRegex(object):
             return False
         for chunk in self._chunks:
             if chunk.size > len(mn):
+                # the length of the chunk exceeds the length of the remaining string to parse
                 if re.match(r'^\w+$', chunk.pattern):
+                    # no wilcards in chunk so string must match exactly
                     try:
                         m = re.match(mn, chunk.pattern).group()
+                        # the remaining string hss been matched to the chunk
                         return True
                     except:
+                        # it is definitely not a match
                         return False
                 elif re.match(r'^(\((\w+\|)+(\w+)?\))$', chunk.pattern):
-                    options = chunk.pattern.replace(
-                        '(', '').replace(')', '').split('|')
-
+                    # we need to check if the chunk is an options group and if
+                    # it is then we need to reduce the length of each option to
+                    # the length of the remaining string to be parsed and evalute the partial
+                    options = chunk.pattern[1: -1].split('|')
                     options = [opt[:-len(mn)] for opt in options]
-                    res = mn in options
+                    res = mn in options  # res for debug
                     return res
                 else:
+                    # we cannot compare criteria, defer to outter loop
                     break
             try:
+                # alls good with the size of the remaining string to be parsed.
+                # is it a match or is it not? No match will throw exception
                 m = re.match(chunk.pattern, mn).group()
+                # it is a match. trim the remaing string and continue to the next loop iteration
                 mn = mn[len(m):]
             except:
+                # nomatch
                 return False
+        # nothing failed so it must be a match
         return True

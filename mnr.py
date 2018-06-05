@@ -4,33 +4,45 @@
 # This version of the mnr library can be redistributed under CC BY-NC 4.0 licence.
 # For any other use, please contact nicholishen (https://github.com/nicholishen)
 
-r"""Support for mnr: A library for tranforming HVAC model numbers 
+r"""
+mnr: A library for tranforming HVAC industry model numbers 
 into regex for comparison.
 
-H.V.A.C. manufacturers (MFR) submit model-numbers (variable in nature) to the AHRI
-in order to certify equipment efficiency ratings. The AHRI then takes the 
-model-numbers (MN) submitted by the MFR and includes them in a certification 
-database (as submitted by MFR). Since all MFR have a different MN nomenclature they 
-have to submit a model number in a pseudo-regex format so that minor variations in 
-MNs will still fall into the proper equipment category. Data congruency 
-issues have arrisen since the AHRI doesn't enforce strict standards for these MN 
-sumittals and MFR are submitting these 'pseudo-regex's' using whatever methods 
+H.V.A.C. manufacturers (MFR) submit equipment model-numbers (variable in nature) 
+to the AHRI in order to certify equipment efficiency ratings. The AHRI then 
+takes the model-numbers (MN) submitted by the MFR and includes them in a 
+certification database (as submitted by MFR). Since all MFRs have a different 
+MN nomenclature, they have to submit said model number in a pseudo-regex-format. 
+This is because small changes in manufacturing, such a vendor change, will 
+trigger a small iteration in the model-number. Data congruency issues have 
+arrisen since the AHRI doesn't enforce strict standards for the format 
+in which the these MNs are sumitted. MFRs have taken it upon themselves to 
+create their own 'pseudo-regex's', individual to each MFR, using whatever methods 
 their private internal policies stiplate. The following is an example 
-of the aforementioned challenge:
-    (AB|BC|CD)123\w{1,5}  how it should be submitted (regex-compliant)
-    (AB,BC,CD)123*        how MFR 'A' submits it (umm, not bad)
-    AB/BC/CD123***        how MFR 'B' submits it (could you guys just do like 'A'?)
+of the aforementioned challenges:
+
+    ^(?:AB|BC|CD)123\w{1,5}$    how it should be submitted (regex-compliant)
+    (AB,BC,CD)123*              how MFR 'A' submits it (umm, not bad)
+    AB/BC/CD123***              how MFR 'B' submits it (could you guys just do like 'A'?)
     ...
-    'L83UF1V57/72E12'     (wtf)
+    'L83UF1V57/72E12'           (wtf)
 
-MNR cuts through the confusion and converts these shitty-re's into the beautiful re's 
-they were meant to be. Additionally, this module provides the unique ability to 
-match partial-model-numbers to a full regex using a reverse-regex match. This is a 
-necessary feature for db filtering since a partial MN query should yield a match in a 
-field that contains the full MN regex. So in otherwords, instead of matching a partial
-re to a full string, we're actually matching a partial string to a full re. 
+MNR cuts through the confusion and converts these shitty-re's into the 
+beautiful re's they were meant to be. Additionally, this module provides 
+the unique ability to match partial-model-numbers to a full regex using 
+a reverse-regex match. This is a necessary feature for db filtering since 
+a partial MN query should yield a match in a field that contains the full 
+MN regex. So in otherwords, instead of matching a partial re to a 
+full string (how re is supposed to work), we're actually matching a 
+partial string to a full re. 
 
-_Example MFR model-number nomenclature:
+Visulize it like this:
+    Typical re use:
+        if '(AB|CD|EF)123' in 'AB123-X1234-12341234-XXXX'
+    Reverse case (how we're gonna use it):
+        if 'AB123' in r'^(?:AB|CD|EF)\d{3}\w-?-?\w\d$'
+
+Example MFR model-number nomenclature:
     https://www.lennox.com/lib/legacy-res/pdfs/lennox_model_and_serial_nomenclature.pdf
 
 Examples:
@@ -172,12 +184,11 @@ class ModelNumberRegex(object):
                 AB,BC,CD -> (AB|BC|CD)
             """
             try:
-                # pattern = re.match(r'^(\w{1,3},)+', self._rem_str).group()
+                #DEP pattern = re.match(r'^(\w{1,3},)+', self._rem_str).group()
                 pattern = self._pattern1.match(self._rem_str).group()
                 options = pattern.split(',')
                 begin = sum([len(item) for item in options]) + len(options) - 1
                 end = begin + len(options[0])
-                # if re.match(r'^(\w{1,2},\w{1,2})$', self._rem_str) is None:
                 if self._pattern1_sub1.match(self._rem_str) is None:
                     options[len(options)-1] = self._rem_str[begin:end]
                     self._rem_str = self._rem_str[end:]
@@ -198,7 +209,7 @@ class ModelNumberRegex(object):
                 adds 'ABS12' to the re chunk and trims the remaining string.
             """
             try:
-                # pattern = re.match(r'^(\w+)', self._rem_str).group()
+                #DEP pattern = re.match(r'^(\w+)', self._rem_str).group()
                 pattern = self._pattern2.match(self._rem_str).group()
                 size = len(pattern)
                 self._rem_str = self._rem_str[size:]
@@ -213,7 +224,7 @@ class ModelNumberRegex(object):
                 (AB,CD,EF) -> (AB|CD|EF)
             """
             try:
-                # pattern = re.match(r'^\((\w{1,3},?)+\)', self._rem_str).group()
+                #DEP pattern = re.match(r'^\((\w{1,3},?)+\)', self._rem_str).group()
                 pattern = self._pattern3.match(self._rem_str).group()
                 size = len(pattern.split(',')[0]) - 1
                 self._rem_str = self._rem_str[len(pattern):]
@@ -231,10 +242,10 @@ class ModelNumberRegex(object):
                 * -> 
             """
             try:
-                # pattern = re.match(r'^(\*+)', self._rem_str).group()
+                #DEP pattern = re.match(r'^(\*+)', self._rem_str).group()
                 pattern = self._pattern4.match(self._rem_str).group()
                 size = len(pattern)
-                # second_match = re.match(r'^(\*)$', self._rem_str)
+                #DEP second_match = re.match(r'^(\*)$', self._rem_str)
                 second_match = self._pattern4_sub1.match(self._rem_str)
                 self._rem_str = self._rem_str[size:]
                 if second_match:
@@ -251,7 +262,7 @@ class ModelNumberRegex(object):
                 ---123 -> -?-?-? -> trimmed=123
             """
             try:
-                # pattern = re.match(r'^(-+)', self._rem_str).group()
+                #DEP pattern = re.match(r'^(-+)', self._rem_str).group()
                 pattern = self._pattern5.match(self._rem_str).group()
                 self._rem_str = self._rem_str[len(pattern):]
                 return PatternChunk(pattern.replace('-', '-?'), -1)
@@ -265,7 +276,7 @@ class ModelNumberRegex(object):
             Replace (*) with \w{1,5}
             """
             try:
-                # pattern = re.match(r'^(\(\*\))', self._rem_str).group()
+                #DEP pattern = re.match(r'^(\(\*\))', self._rem_str).group()
                 pattern = self._pattern6.match(self._rem_str).group()
                 self._rem_str = self._rem_str[len(pattern):]
                 return PatternChunk(r'(\w{1,5})', -1)
@@ -286,11 +297,10 @@ class ModelNumberRegex(object):
                 if res is not None:
                     self._chunks.append(res)
                     break_count = 0
-                    break
-            # debs = self._rem_str
+                    break #breaking for rule in rules loop
             if break_count > 2:
                 raise Exception(
-                    f"Couldn't parse the remaining: {self._rem_str}")
+                    f"Couldn't parse the remaining string: {self._rem_str}")
             break_count += 1
         if self._rem_str:
             raise Exception('Unknown parsing error.')
@@ -315,13 +325,12 @@ class ModelNumberRegex(object):
                 # the length of the chunk exceeds the length of the remaining string to parse
                 if re.match(r'^\w+$', chunk.pattern):
                     # no wilcards in chunk so string must match exactly
-                    try:
-                        m = re.match(mn, chunk.pattern).group()
-                        # the remaining string hss been matched to the chunk
-                        return True
-                    except:
+                    if re.match(mn, chunk.pattern) is None:
                         # it is definitely not a match
                         return False
+                    else:
+                        # the remaining string hss been matched to the chunk
+                        return True
                 elif re.match(r'^(\((\w+\|)+(\w+)?\))$', chunk.pattern):
                     # we need to check if the chunk is an options group and if
                     # it is then we need to reduce the length of each option to

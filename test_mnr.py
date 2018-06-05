@@ -10,41 +10,41 @@ class TestModelNumberRegex(unittest.TestCase):
     def test_match_cases(self):
         """Testing cases that should return True"""
         cases = (
-            ('*DD2B080ACV3', 'XDD2B080ACV3',),
-            ('G(*)(T,X,M)(*)B(*)', 'G123',),
-            ('AB/CD/EF123*(*)(C,D,E)F-9,10', 'CD123',),
-            ('9,10', '9',),
-            ('58PH*090-(A,C,E)--0**14', '58PHX090C--0XX14',),
-            ('C(A,C,D,E)36B34+TDR', 'CE36B',),
-            ('FC/MC/PC32A+TXV', 'PC32A',),
-            ('CH33-50/60C+TDR', 'CH3360C',),
-            ('L*48/60Z9', 'LX60Z',),
-            ('L85UF1V104/118F14', 'L85UF',),
-            ('CR33-30/36A+TDR+TXV', 'CR33-36A',),
-            ('CF/CM/CU24A+TXV', 'CF2',),
+            ('*DD2B080ACV3',                    'XDD2B080ACV3',),
+            ('G(*)(T,X,M)(*)B(*)',              'G123',),
+            ('AB/CD/EF123*(*)(C,D,E)F-9,10',    'CD123',),
+            ('9,10',                            '9',),
+            ('58PH*090-(A,C,E)--0**14',         '58PHX090C--0XX14',),
+            ('C(A,C,D,E)36B34+TDR',             'CE36B',),
+            ('FC/MC/PC32A+TXV',                 'PC32A',),
+            ('CH33-50/60C+TDR',                 'CH3360C',),
+            ('L*48/60Z9',                       'LX60Z',),
+            ('L85UF1V104/118F14',               'L85UF',),
+            ('CR33-30/36A+TDR+TXV',             'CR33-36A',),
+            ('CF/CM/CU24A+TXV',                 'CF2',),
         )
-        results = [self.m.transform(a).is_match(k) for a, k in cases]
-        self.assertNotIn(False, results)
+        for a, b in cases:
+            self.assertTrue(self.m.transform(a).is_match(b))
 
     def test_not_match_cases(self):
         """Testing cases that should return False"""
 
         cases = (
-            ('*DD2B080ACV3', 'XDD2B081ACV3',),
-            ('G(*)(T,X,M)(*)B(*)', 'X123',),
-            ('AB/CD/EF123*(*)(C,D,E)F-9,10', 'FK123',),
-            ('9,10', '8',),
-            ('58PH*090-(A,C,E)--0**14', '58PHX090C--0XX17',),
-            ('C(A,C,D,E)36B34+TDR', 'CE36B36',),
-            ('FC/MC/PC32A+TXV', 'PX32A',),
-            ('CH33-50/60C+TDR', 'CX3360C',),
-            ('L*48/60Z9', 'LX60Z6',),
-            ('L85UF1V104/118F14', 'L85UF2',),
-            ('CR33-30/36A+TDR+TXV', 'CR33-36B',),
-            ('CF/CM/CU24A+TXV', 'CF25',),
+            ('*DD2B080ACV3',                    'XDD2B081ACV3',),
+            ('G(*)(T,X,M)(*)B(*)',              'X123',),
+            ('AB/CD/EF123*(*)(C,D,E)F-9,10',    'FK123',),
+            ('9,10',                            '8',),
+            ('58PH*090-(A,C,E)--0**14',         '58PHX090C--0XX17',),
+            ('C(A,C,D,E)36B34+TDR',             'CE36B36',),
+            ('FC/MC/PC32A+TXV',                 'PX32A',),
+            ('CH33-50/60C+TDR',                 'CX3360C',),
+            ('L*48/60Z9',                       'LX60Z6',),
+            ('L85UF1V104/118F14',               'L85UF2',),
+            ('CR33-30/36A+TDR+TXV',             'CR33-36B',),
+            ('CF/CM/CU24A+TXV',                 'CF25',),
         )
-        results = [self.m.transform(a).is_match(k) for a, k in cases]
-        self.assertNotIn(True, results)
+        for a, b in cases:
+            self.assertFalse(self.m.transform(a).is_match(b))
 
     def test_raise_on_malformed_mn(self):
         """Testing a malformed string for exception, otherwise
@@ -62,7 +62,6 @@ class TestModelNumberRegex(unittest.TestCase):
         matcher2 = pickle.loads(pkl)
         r1 = (matcher1.pattern, matcher1.model_number, matcher1._chunks,)
         r2 = (matcher2.pattern, matcher2.model_number, matcher2.chunks,)
-
         self.assertEqual(r1, r2)
 
     def test_regex_chunks(self):

@@ -102,7 +102,10 @@ class ModelNumberRegex(object):
 
     def transform(self, model_number: str=None) -> 'ModelNumberRegex':
         """self: Converts mfr psuedo-regex model-numbers to real-regex and 
-        stores them for rapid reverse matches; returns the new regex. 
+        stores them for rapid reverse matches; returns self for method chaining. 
+        Example:
+            m = ModelNumberRegex()
+            patterns_in_model_number = m.transform('AB,BC,DE1*(A,B,C)*--17').chunks
 
         Works by parsing the shitty-re from left to right by chunking 
         the variable compents according to the rules and trimming the 
@@ -116,6 +119,7 @@ class ModelNumberRegex(object):
             model_number (:obj: `str`, optional) The shitty-re to be 'compiled'
         Returns:
             ModelNumberRegex - self
+
         """
 
         # check if model number has been properly set or raise

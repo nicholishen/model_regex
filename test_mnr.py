@@ -23,7 +23,7 @@ class TestModelNumberRegex(unittest.TestCase):
             ('CR33-30/36A+TDR+TXV', 'CR33-36A',),
             ('CF/CM/CU24A+TXV', 'CF2',),
         )
-        results = [self.m.transform(case[0]).is_match(case[1]) for case in cases]
+        results = [self.m.transform(a).is_match(k) for a, k in cases]
         self.assertNotIn(False, results)
 
     def test_not_match_cases(self):
@@ -43,7 +43,7 @@ class TestModelNumberRegex(unittest.TestCase):
             ('CR33-30/36A+TDR+TXV', 'CR33-36B',),
             ('CF/CM/CU24A+TXV', 'CF25',),
         )
-        results = [self.m.transform(case[0]).is_match(case[1]) for case in cases]
+        results = [self.m.transform(a).is_match(k) for a, k in cases]
         self.assertNotIn(True, results)
 
     def test_raise_on_malformed_mn(self):
@@ -88,12 +88,14 @@ class TestModelNumberRegex(unittest.TestCase):
         self.assertEqual('(AB|CD|EF)', self.m.transform(t).pattern)
 
     def test_rule2(self):
-        self.assertEqual('123',
-                         self.m.transform('123(A,B)').chunks[0].pattern
-                         )
-        self.assertEqual('123',
-                         self.m.transform('123***').chunks[0].pattern
-                         )
+        self.assertEqual(
+            '123',
+            self.m.transform('123(A,B)').chunks[0].pattern
+        )
+        self.assertEqual(
+            '123',
+            self.m.transform('123***').chunks[0].pattern
+        )
 
     def test_rule4(self):
         self.assertEquals(r'\w123', self.m.transform('*123').pattern)
@@ -103,7 +105,6 @@ class TestModelNumberRegex(unittest.TestCase):
         self.assertEquals(r'-?-?-?123', self.m.transform('---123').pattern)
 
     def test_rule6(self):
-
         self.assertEquals(r'(\w{1,5})', self.m.transform('(*)').pattern)
 
 

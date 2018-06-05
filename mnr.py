@@ -123,9 +123,11 @@ class ModelNumberRegex(object):
         the variable compents according to the rules and trimming the 
         remaining string until nothing is left.
         Think of it like a pac-man parser: this is pacman -> :V
-        :V '(A,B,C)123' -> []
-               :V '123' -> ['(A|B|C)']
-                     :V -> ['(A|B|C)', '123']
+        :V '(A,B,C)123*A' -> []
+               :V '123*A' -> ['(A|B|C)']
+                  :V '*A' -> ['(A|B|C)', '123']
+                   :V 'A' -> ['(A|B|C)', '123', \w]
+                       :V -> ['(A|B|C)', '123', \w, A]
 
         Args:
             model_number (:obj: `str`, optional) The shitty-re to be 'compiled'
